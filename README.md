@@ -4,6 +4,34 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/18wa4pqqsge9m0x3?svg=true)](https://ci.appveyor.com/project/AIRLegend/aitrack)
 
+## This repository is a fork of the original [AIRLegend/aitrack](https://github.com/AIRLegend/aitrack) patched to work on linux.
+
+### Dependencies
+
+* onnxruntime
+* OpenMP
+* OpenCV
+* Qt5
+
+### Building
+
+Make sure you have installed the dependencies above, in the repository directory:
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+ln --symbolic ../models models
+```
+
+### Running
+
+Build with the commands above, then run `aitrack` in the build directory.
+
+## Original README below:
+
+---
 
 ## What is this?
 
