@@ -43,7 +43,7 @@ if (NOT EXISTS "Dependencies/PS3EyeDriver")
 			GIT_URL         https://github.com/inspirit/PS3EYEDriver.git
 			GIT_BRANCH      master)
 			
-	file(RENAME "PS3EyeDriver" "Dependencies/PS3EyeDriver")
+	file(RENAME "PS3EYEDriver" "Dependencies/PS3EyeDriver")
 endif()
 
 
