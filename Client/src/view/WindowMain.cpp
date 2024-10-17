@@ -40,7 +40,9 @@ WindowMain::~WindowMain()
 void WindowMain::closeEvent(QCloseEvent* event)
 {
 	// note: deleting nullptr has no effect
+#ifdef _WIN32
 	delete(this->toggle_tracking_shortcut);
+#endif
 	this->presenter->close_program();
 }
 
@@ -184,6 +186,7 @@ void WindowMain::notify(IView* self)
 
 void WindowMain::set_shortcuts(bool enabled)
 {
+#ifdef _WIN32
 	// referer to program state instead to avoid QT routines
 	if (enabled) {
 		if (this->toggle_tracking_shortcut == nullptr) {
@@ -202,6 +205,7 @@ void WindowMain::set_shortcuts(bool enabled)
 		delete this->toggle_tracking_shortcut;
 		this->toggle_tracking_shortcut = nullptr;
 	}
+#endif
 }
 
 IView* WindowMain::get_calibration_window()

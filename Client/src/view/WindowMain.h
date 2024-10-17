@@ -49,7 +49,9 @@ private:
 	Ui::MainWindow ui;
 
 	//Shortcuts
+#ifdef _WIN32
 	QGlobalShortcut *toggle_tracking_shortcut{nullptr};
+#endif
 
 	QPushButton *btn_track, *btn_save, *btn_config;
 	QLabel *tracking_frame, *tracking_info;
