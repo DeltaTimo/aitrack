@@ -7,6 +7,7 @@ OCVCamera::OCVCamera(int width, int height, int fps, int index) :
 	cap(),
 	cam_index(index)
 {
+#ifdef _WIN32
 	CV_BACKEND = cv::CAP_DSHOW;
 	if (!is_camera_available())
 	{
@@ -15,6 +16,13 @@ OCVCamera::OCVCamera(int width, int height, int fps, int index) :
 		if (!is_camera_available())
 			throw std::runtime_error("No compatible camera found.");
 	}
+#else
+	CV_BACKEND = cv::CAP_V4L2;
+	if (!is_camera_available())
+	{
+		throw std::runtime_error("No compatible camera found.");
+	}
+#endif
 	is_valid = true;
 
 
