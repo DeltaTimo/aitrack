@@ -31,7 +31,7 @@ void MAFilter::filter(float* in_array, float* out_array)
 
 	for (int i = 0; i < this->array_size; i++)
 	{
-		if (isnan(this->sum[i]))
+		if (std::isnan(this->sum[i]))
 		{
 			// initialize sum
 			this->sum[i] = in_array[i] * this->n_steps;
