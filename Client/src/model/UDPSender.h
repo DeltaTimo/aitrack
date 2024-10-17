@@ -1,8 +1,14 @@
 #pragma once
 
+#ifdef _WIN32
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
 #include <Ws2def.h>
+#elif __linux
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/udp.h>
+#endif
 
 #include <string>
 
@@ -27,8 +33,13 @@ private:
 		sockaddr_in6 local_IPv6;
 	};
 
+#ifdef _WIN32
 	WSAData data;
 	SOCKET s;
+#elif __linux
+	using SOCKET = int;
+	SOCKET s;
+#endif
 
 public:
 	std::string ip;

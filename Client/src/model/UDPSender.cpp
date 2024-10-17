@@ -1,6 +1,10 @@
 #include <iostream>
 
 #include "UDPSender.h"
+#ifdef __linux
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
 
 UDPSender::UDPSender(const char* dest_ip, int dest_port)
 {
@@ -10,11 +14,12 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
 
     //std::cout << "ip: " << this->ip << "  port: " <<  this->port << std::endl;
 
+#ifdef _WIN32
     WSAStartup(MAKEWORD(2, 2), &data);
-
 
     memset(&dest_IPv6, 0, sizeof(dest_IPv6));
     memset(&local_IPv6, 0, sizeof(local_IPv6));
+#endif
 
     if (inet_pton(AF_INET6, dest_ip, &dest_IPv6.sin6_addr) == 1)
     {
@@ -28,7 +33,10 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
         local_IPv6.sin6_port = htons(0);
 
         //local_IPv6.sin6_addr = IN6ADDR_ANY_INIT;
-        bind(s, (sockaddr*)&local_IPv6, sizeof(local_IPv6));
+        this->valid = bind(s, (sockaddr*)&local_IPv6, sizeof(local_IPv6)) == 0;
+        if (!this->valid) {
+            std::cout << "Couldn't bind to IPv6 address." << std::endl;
+        }
     }
     else if (inet_pton(AF_INET, dest_ip, &dest.sin_addr) == 1)
     {
@@ -41,7 +49,10 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
         local.sin_family = AF_INET;
         local.sin_port = htons(0);
         //local.sin_addr.S_un.S_addr = INADDR_ANY;
-        bind(s, (sockaddr*)&local, sizeof(local));
+        this->valid = bind(s, (sockaddr*)&local, sizeof(local)) == 0;
+        if (!this->valid) {
+            std::cout << "Couldn't bind to IPv4 address." << std::endl;
+        }
     }
     else
     {
@@ -57,8 +68,12 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
 UDPSender::~UDPSender()
 {
     std::cout << "Closing connection" << std::endl;
+#ifdef _WIN32
     closesocket(s);
     WSACleanup();
+#elif __linux
+    if (s) close(s);
+#endif
 }
 
 
