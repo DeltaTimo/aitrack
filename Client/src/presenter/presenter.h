@@ -13,8 +13,6 @@
 
 #include "../tracker/TrackerFactory.h"
 #include "../tracker/TrackerWrapper.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
 
 class Presenter : IPresenter, IUpdateSub
 {
@@ -24,7 +22,6 @@ private:
 	std::unique_ptr<TrackerFactory> tracker_factory;
 	std::unique_ptr<TrackerWrapper> t;
 	std::vector<std::shared_ptr<Camera>> all_cameras;
-	std::shared_ptr<spdlog::logger> logger;
 
 	// Current program's state + config.
 	ConfigData state;

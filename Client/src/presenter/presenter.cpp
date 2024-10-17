@@ -15,8 +15,6 @@
 Presenter::Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, std::unique_ptr<ConfigMgr>&& conf_mgr)
 {
 	
-	logger = spdlog::get("aitrack");
-
 	this->tracker_factory = std::move(t_factory);
 	this->conf_mgr = std::move(conf_mgr);
 	state = this->conf_mgr->getConfig();
@@ -33,25 +31,20 @@ Presenter::Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, s
 
 	CameraFactory camfactory;
 	CameraSettings camera_settings = build_camera_params();
-	logger->info("Searching for cameras...");
 	try
 	{
 		all_cameras = camfactory.getCameras(camera_settings);
 	}
 	catch (const std::exception& ex)
 	{
-		logger->error("Error querying for cameras");
-		logger->error(ex.what());
 		throw std::runtime_error("Error querying cameras");
 	}
-	logger->info("Number of recognized cameras: {}", all_cameras.size());
 
 	if (all_cameras.size() == 0)
 	{
 		std::cout << "[ERROR] NO CAMERAS AVAILABLE" << std::endl;
 		this->view->set_enabled(false);
 		this->view->show_message("No cameras detected. Plug one and restart the program.", MSG_SEVERITY::CRITICAL);
-		logger->info("No cameras were detected");
 	}
 	else
 	{
@@ -60,7 +53,6 @@ Presenter::Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, s
 
 		//Reset selected camera if saved camera is out of detected cameras' bounds
 		if (state.selected_camera >= state.num_cameras_detected) {
-			logger->info("Previously selected camera {} is no longer available, resetting.", state.selected_camera);
 			state.selected_camera = 0;
 			save_prefs(state);
 			this->view->show_message("Previously selected camera is no longer available.\nPlease choose another camera in Configuration menu.", MSG_SEVERITY::NORMAL);
@@ -91,7 +83,6 @@ Presenter::Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, s
 
 	if (state.autocheck_updates)
 	{
-		logger->info("Checking for updates");
 		update_chkr = std::make_unique<UpdateChecker>(std::string(AITRACK_VERSION), (IUpdateSub*)this);
 		update_chkr->get_latest_update(std::string("AIRLegend/aitrack"));
 	}
@@ -121,7 +112,6 @@ void Presenter::init_sender(std::string &ip, int port)
 
 	this->udp_sender = std::make_unique<UDPSender>(ip_str.data(), port_dest);
 
-	this->logger->info("UDP sender reinitialized. IP: {}  PORT: {}", ip_str, port_dest);
 }
 
 void Presenter::init_tracker(int type)
@@ -135,7 +125,6 @@ void Presenter::init_tracker(int type)
 #ifdef _DEBUG
 			std::cout << "Resetting old tracker" << std::endl;
 #endif
-			this->logger->info("Rebuilding tracker with new parameters");
 			this->t.reset(nullptr);
 			
 			std::cout << "Scale_X: " << state.head_scale_x << "Scale_Y: " << state.head_scale_y << std::endl;
@@ -158,7 +147,6 @@ void Presenter::init_tracker(int type)
 	}
 	else
 	{
-		this->logger->info("Building Tracker with selected camera: {}", state.selected_camera);
 		this->t = tracker_factory->buildTracker(all_cameras[state.selected_camera]->width,
 			all_cameras[state.selected_camera]->height,
 			(float)state.prior_distance,
@@ -170,7 +158,6 @@ void Presenter::init_tracker(int type)
 		);
 	}
 	state.selected_model = type;
-	this->logger->info("Tracker initialized.");
 }
 
 void Presenter::run_loop()
@@ -188,12 +175,10 @@ void Presenter::run_loop()
 
 	double buffer_data[6];
 
-	this->logger->info("Starting camera {} capture", state.selected_camera);
 
 	try 
 	{
 		cam->start_camera();
-		this->logger->info("Camera {} started capturing", state.selected_camera);
 
 		std::chrono::milliseconds frame_duration(1000 / state.video_fps);
 		while(run)
@@ -233,10 +218,8 @@ void Presenter::run_loop()
 		}
 
 		cam->stop_camera();
-		this->logger->info("Stop camera {} capture", state.selected_camera);
 	}
 	catch (std::exception& ex) {
-		this->logger->error(ex.what());
 	}
 }
 
@@ -275,7 +258,6 @@ void Presenter::update_stabilizer(const ConfigData& data)
 	{
 		this->filter = std::make_unique<EAFilter>(66 * 2);
 	}
-	this->logger->info("Updated stabilizer.");
 }
 
 CameraSettings Presenter::build_camera_params()
@@ -291,7 +273,6 @@ CameraSettings Presenter::build_camera_params()
 
 void Presenter::update_camera_params()
 {
-	this->logger->info("Updating camera parameters...");
 	all_cameras[state.selected_camera]->set_settings(build_camera_params());
 
 	// The camera can be using its default resolution so we must sync our state
@@ -299,7 +280,6 @@ void Presenter::update_camera_params()
 	state.video_height = all_cameras[state.selected_camera]->height;
 	state.video_width = all_cameras[state.selected_camera]->width;
 	state.video_fps = all_cameras[state.selected_camera]->fps;
-	this->logger->info("Updated camera parameters. {}x{}@{}", state.video_width, state.video_height, state.video_fps);
 }
 
 void Presenter::send_data(double* buffer_data)
@@ -324,7 +304,6 @@ void Presenter::toggle_tracking()
 
 void Presenter::save_prefs(const ConfigData& data)
 {
-	this->logger->info("Saving prefs");
 
 	// Disable painting parts from the run loop if needed
 	this->paint = data.show_video_feed;
@@ -363,7 +342,6 @@ void Presenter::save_prefs(const ConfigData& data)
 
 	conf_mgr->updateConfig(state);
 	sync_ui_inputs();
-	this->logger->info("Prefs saved");
 }
 
 void Presenter::calibrate_face(IView& calibration_view)
@@ -379,12 +357,10 @@ void Presenter::calibrate_face(IView& calibration_view)
 	cv::Scalar color_blue(255, 0, 0);
 	cv::Scalar color_magenta(255, 0, 255);
 
-	this->logger->info("Starting calibration with camera {}", state.selected_camera);
 
 	try
 	{
 		cam->start_camera();
-		this->logger->info("Camera {} started capturing", state.selected_camera);
 
 		std::chrono::milliseconds frame_duration(1000 / state.video_fps);
 
@@ -414,10 +390,8 @@ void Presenter::calibrate_face(IView& calibration_view)
 		}
 
 		cam->stop_camera();
-		this->logger->info("Stop camera {} capture", state.selected_camera);
 	}
 	catch (std::exception& ex) {
-		this->logger->error(ex.what());
 	}
 
 	calibration_view.set_visible(false);
@@ -425,7 +399,6 @@ void Presenter::calibrate_face(IView& calibration_view)
 	TrackerMetadata tmetadata = t->get_model_config();
 	state.head_scale_x = tmetadata.head_width_scale;
 	save_prefs(state);
-	this->logger->info("Ended calibration.");
 	view->show_message("Calibration ended! Face scale saved!", MSG_SEVERITY::NORMAL);
 }
 
@@ -448,7 +421,6 @@ void Presenter::on_update_check_completed(bool update_exists)
 	if (update_exists)
 	{
 		this->view->show_message("New update available. Check https://github.com/AIRLegend/aitrack/releases", MSG_SEVERITY::NORMAL);
-		this->logger->info("New release has been found.");
 	}
 	
 }
