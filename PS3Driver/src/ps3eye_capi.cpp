@@ -1,3 +1,4 @@
+#ifndef __linux
 /**
  * PS3EYEDriver C API Interface
  * Copyright (c) 2014 Thomas Perl <m@thp.io>
@@ -251,3 +252,4 @@ ps3eye_set_parameter(ps3eye_t *eye, ps3eye_parameter param, int value)
 
     return 0;
 }
+#endif

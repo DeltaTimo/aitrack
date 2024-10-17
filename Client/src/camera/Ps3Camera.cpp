@@ -1,3 +1,4 @@
+#ifndef __linux
 #include "Ps3Camera.h"
 #include <stdexcept>
 #include <iostream>
@@ -61,3 +62,4 @@ CameraSettings Ps3Camera::get_settings()
 {
 	return CameraSettings(setting);
 }
+#endif

@@ -1,6 +1,8 @@
 #include "CameraFactory.h"
 
+#ifndef __linux
 #include "Ps3Camera.h"
+#endif
 #include "OCVCamera.h"
 #include "NullCamera.h"
 
@@ -8,6 +10,7 @@ std::unique_ptr<Camera> CameraFactory::buildCamera(int width, int height, int ca
 {
 	std::unique_ptr<Camera> camera;
 	bool error = false;
+#ifndef __linux
 	bool has_ps3 = true;
 
 	try
@@ -17,6 +20,9 @@ std::unique_ptr<Camera> CameraFactory::buildCamera(int width, int height, int ca
 	{
 		has_ps3 = false;
 	}
+#else
+	bool has_ps3 = false;
+#endif
 
 	if (!has_ps3)
 	{
@@ -45,8 +51,10 @@ std::vector<std::shared_ptr<Camera>> CameraFactory::getCameras(CameraSettings& s
 	// Search first for any PS3 camera.
 	try
 	{
+#ifndef __linux
 		cams.push_back(std::make_shared<Ps3Camera>(640, 480, 60));
 		cams[0]->set_settings(settings);
+#endif
 	}
 	catch (...)
 	{

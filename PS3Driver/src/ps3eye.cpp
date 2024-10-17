@@ -1,3 +1,4 @@
+#ifndef __linux
 // source code from https://github.com/inspirit/PS3EYEDriver
 #include "ps3eye.h"
 
@@ -1474,3 +1475,4 @@ void PS3EYECam::sccb_w_array(const uint8_t (*data)[2], int len)
 }
 
 } // namespace
+#endif
