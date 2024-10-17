@@ -74,8 +74,8 @@ private:
 	Version current_version;
 
 public:
-	UpdateChecker(std::string &version, IUpdateSub *obs);
-	void get_latest_update(std::string &repo);
+	UpdateChecker(const std::string &version, IUpdateSub *obs);
+	void get_latest_update(const std::string & repo);
 	
 
 private slots:

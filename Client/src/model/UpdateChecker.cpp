@@ -8,7 +8,7 @@
 #include <QObject>
 
 
-UpdateChecker::UpdateChecker(std::string& version, IUpdateSub *obs):
+UpdateChecker::UpdateChecker(const std::string& version, IUpdateSub *obs):
     request(),
     manager(),
     current_version(version)
@@ -35,7 +35,7 @@ void UpdateChecker::callback(QNetworkReply* reply)
 }
 
 
-void UpdateChecker::get_latest_update(std::string& repo)
+void UpdateChecker::get_latest_update(const std::string & repo)
 {
     QObject::connect(
         &manager,

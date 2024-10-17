@@ -87,7 +87,7 @@ void OCVCamera::get_frame(uint8_t* buffer)
 
 }
 
-void OCVCamera::set_settings(CameraSettings& settings)
+void OCVCamera::set_settings(const CameraSettings& settings)
 {
 	this->width = settings.width > 0 ? settings.width : this->cam_native_width;
 	this->height = settings.height > 0 ? settings.height : this->cam_native_height;
