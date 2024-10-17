@@ -7,6 +7,11 @@
 #include <math.h>
 #include <omp.h>
 
+#ifdef _WIN32
+using STRING = std::wstring;
+#else
+using STRING = std::string;
+#endif
 
 float inline logit(float p)
 {
@@ -20,7 +25,7 @@ float inline logit(float p)
 }
 
 
-StandardTracker::StandardTracker(std::unique_ptr<PositionSolver>&& solver, std::wstring& detection_model_path, std::wstring& landmark_model_path):
+StandardTracker::StandardTracker(std::unique_ptr<PositionSolver>&& solver, STRING& detection_model_path, STRING& landmark_model_path):
     improc(),
     detection_input_node_names{ "input" },
     detection_output_node_names{ "output", "maxpool" },
@@ -300,7 +305,7 @@ const int64_t* StandardTracker::get_landmark_input_dims()
 * 
 */
 
-EfficientTracker::EfficientTracker(std::unique_ptr<PositionSolver> solver, std::wstring& detection_model_path, std::wstring& landmark_model_path) :
+EfficientTracker::EfficientTracker(std::unique_ptr<PositionSolver> solver, STRING& detection_model_path, STRING& landmark_model_path) :
      StandardTracker(std::move(solver), detection_model_path, landmark_model_path)
 {  
     tensor_input_dims[0] = 1;

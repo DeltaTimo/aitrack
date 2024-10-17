@@ -45,8 +45,10 @@ std::unique_ptr<TrackerWrapper> TrackerFactory::buildTracker(
 		break;
 	}
 
+#ifdef _WIN32
 	std::wstring detect_wstr = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(detect_path);
 	std::wstring landmark_wstr = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(landmark_path);
+#endif
 
 	try
 	{
@@ -55,13 +57,21 @@ std::unique_ptr<TrackerWrapper> TrackerFactory::buildTracker(
 			std::unique_ptr<SimplePositionSolver> solver = std::make_unique<SimplePositionSolver>(
 				im_width, im_height, -2, -2, distance, complex_solver, fov, x_scale, y_scale, z_scale
 				);
+#ifdef _WIN32
 			t = std::make_unique<EfficientTracker>( std::move(solver), detect_wstr, landmark_wstr);
+#else
+			t = std::make_unique<EfficientTracker>( std::move(solver), detect_path, landmark_path);
+#endif
 		}
 		else {		
 			std::unique_ptr<PositionSolver> solver = std::make_unique<PositionSolver>(
 				im_width, im_height, -2, -2, distance, complex_solver, fov, x_scale, y_scale, z_scale
 			);
+#ifdef _WIN32
 			t = std::make_unique<StandardTracker>(std::move(solver), detect_wstr, landmark_wstr);
+#else
+			t = std::make_unique<StandardTracker>(std::move(solver), detect_path, landmark_path);
+#endif
 		}
 	}
 	catch (std::exception e)
