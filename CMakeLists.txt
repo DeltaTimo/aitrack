@@ -1,62 +1,61 @@
-cmake_minimum_required(VERSION 3.18)
-project(AITrack)
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-include(cmake/GitUtils.cmake)
+cmake_minimum_required(VERSION 3.30.5)
 
-SET(ONNX_PKG_NAME "onnxruntime-win-x64-1.4.0")
+project(aitrack VERSION 1.0.0 LANGUAGES C CXX)
 
-SET(DEPS_DIR "Dependencies/")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-SET(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v1.4.0/onnxruntime-win-x64-1.4.0.zip")
-SET(ONNXRUNTIME_PATH "Dependencies/${ONNX_PKG_NAME}.zip")
-SET(ONNXRUNTIME_EXTRACT_PATH "Dependencies/")
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
+find_package(onnxruntime REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(OpenCV COMPONENTS opencv_core REQUIRED)
+find_package(OpenCV COMPONENTS opencv_imgproc REQUIRED)
+find_package(OpenCV COMPONENTS opencv_video REQUIRED)
+find_package(OpenCV COMPONENTS opencv_videoio REQUIRED)
+find_package(LIBUSB REQUIRED)
 
-#SET(PS3Driver_URL "")
-#SET(PS3Driver_PATH "")
-SET(OPENCV_URL "https://github.com/opencv/opencv/releases/download/4.6.0/opencv-4.6.0-vc14_vc15.exe")
-SET(OPENCV_PATH "${DEPS_DIR}opencv-4.6.0-vc14_vc15.exe")
+find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS UiTools REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-SET(LIBUSB_URL "https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z")
-SET(LIBUSB_NAME "libusb-1.0.23")
+add_executable(aitrack
+               Client/src/presenter/presenter.cpp
+               Client/src/tracker/TrackerWrapper.cpp
+               Client/src/tracker/TrackerFactory.cpp
+               Client/src/camera/CameraSettings.cpp
+               Client/src/camera/NullCamera.cpp
+               Client/src/camera/Ps3Camera.cpp
+               Client/src/camera/CameraFactory.cpp
+               Client/src/camera/OCVCamera.cpp
+               Client/src/Main.cpp
+               Client/src/view/Resource.qrc
+               Client/src/view/HeadCalibrationWindow.ui
+               Client/src/view/HeadCalibrationWindow.cpp
+               Client/src/view/ConfigWindow.ui
+               Client/src/view/ConfigWindow.cpp
+               Client/src/view/MainWindow.ui
+               Client/src/view/WindowMain.cpp
+               Client/src/model/UDPSender.cpp
+               Client/src/model/Config.cpp
+               Client/src/model/UpdateChecker.cpp
+               Client/res/Resource.qrc
+               AITracker/src/data.cpp
+               AITracker/src/imageprocessor.cpp
+               AITracker/src/model.cpp
+               AITracker/src/filters.cpp
+               AITracker/src/PositionSolver.cpp
+               PS3Driver/src/ps3eye.h
+               PS3Driver/src/ps3eye_capi.h
+               PS3Driver/src/ps3eye.cpp
+               PS3Driver/src/ps3eye_capi.cpp
+)
 
-
-
-if (NOT EXISTS "${ONNXRUNTIME_PATH}")
-    file(DOWNLOAD "${ONNXRUNTIME_URL}" "${ONNXRUNTIME_PATH}")
-	file(ARCHIVE_EXTRACT 
-		INPUT "${ONNXRUNTIME_PATH}"
-		DESTINATION "${ONNXRUNTIME_EXTRACT_PATH}")	
-	file(RENAME "${ONNXRUNTIME_EXTRACT_PATH}/${ONNX_PKG_NAME}" "${ONNXRUNTIME_EXTRACT_PATH}/onnxruntime")
-endif()
-
-if (NOT EXISTS "${DEPS_DIR}${LIBUSB_NAME}.zip")
-    file(DOWNLOAD "${LIBUSB_URL}" "${DEPS_DIR}${LIBUSB_NAME}.zip")
-	file(ARCHIVE_EXTRACT 
-		INPUT "${DEPS_DIR}${LIBUSB_NAME}.zip"
-		DESTINATION "${DEPS_DIR}/libusb")
-endif()
-
-if (NOT EXISTS "Dependencies/PS3EyeDriver")
-	git_clone(
-			PROJECT_NAME    PS3EYEDriver
-			GIT_URL         https://github.com/inspirit/PS3EYEDriver.git
-			GIT_BRANCH      master)
-			
-	file(RENAME "PS3EYEDriver" "Dependencies/PS3EyeDriver")
-endif()
-
-
-if (NOT EXISTS "Dependencies/OpenCV")
-	file(DOWNLOAD "${OPENCV_URL}" "${OPENCV_PATH}")
-	FILE(MAKE_DIRECTORY "Dependencies/OpenCV")
-	file(ARCHIVE_EXTRACT 
-		INPUT "${OPENCV_PATH}"
-		DESTINATION "${DEPS_DIR}OpenCVextracted")
-	file(COPY "${DEPS_DIR}OpenCVextracted/opencv/build/x64/vc15/lib" DESTINATION "${DEPS_DIR}OpenCV/")
-	file(COPY "${DEPS_DIR}OpenCVextracted/opencv/build/include" DESTINATION "${DEPS_DIR}OpenCV/")
-	file(COPY "${DEPS_DIR}OpenCVextracted/opencv/build/include/opencv2/." DESTINATION "${DEPS_DIR}OpenCV/include/" FILES_MATCHING PATTERN "*.hpp")
-	#file(COPY "${DEPS_DIR}OpenCVextracted/opencv/build/bin" DESTINATION "${DEPS_DIR}OpenCV/")
-endif()
-
-
+message(OpenCV_Libs="${OpenCV_Libs}")
+target_include_directories(aitrack PUBLIC AITracker/src PS3Driver/src ${OpenCV_INCLUDE_DIRS} ${onnxruntime_INCLUDE_DIRS} ${LIBUSB_INCLUDE_DIR} ${Qt5_INCLUDE_DIRS})
+target_link_libraries(aitrack onnxruntime::onnxruntime opencv_core opencv_imgproc opencv_video opencv_videoio opencv_objdetect OpenMP::OpenMP_CXX ${OpenCV_Libs} ${LIBUSB_Libs} Qt5::Core Qt5::UiTools Qt5::Widgets Qt5::Quick)
