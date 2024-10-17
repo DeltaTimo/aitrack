@@ -1,6 +1,7 @@
 #include <chrono>
 #include <memory>
 #include <string.h>
+#include <string>
 
 #include "presenter.h"
 #include "opencv2/opencv.hpp"
