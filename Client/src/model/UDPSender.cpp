@@ -49,7 +49,11 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
         local.sin_family = AF_INET;
         local.sin_port = htons(0);
         //local.sin_addr.S_un.S_addr = INADDR_ANY;
+#ifdef _WIN32
         this->valid = bind(s, (sockaddr*)&local, sizeof(local)) == 0;
+#else
+        this->valid = true;
+#endif
         if (!this->valid) {
             std::cout << "Couldn't bind to IPv4 address." << std::endl;
         }
